@@ -1,7 +1,29 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"nerdfolio/internal/app/nerdfolio/commands"
+	"os"
+)
 
 func main() {
-	fmt.Printf("hello world")
+
+	arguments := os.Args
+	// If 'nerdfolio' called without any arguments
+	if len(arguments) < 2 {
+		fmt.Println("expected 'build' or 'help' subcommands")
+		os.Exit(1)
+	}
+
+	// First index is path and other indexes are arguments
+	switch arguments[1] {
+	case "build":
+		commands.HandleBuildCommand()
+
+	case "help":
+		commands.HandleHelpCommand()
+
+	default:
+		commands.HandleHelpCommand()
+	}
 }

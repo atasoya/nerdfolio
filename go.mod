@@ -1,3 +1,3 @@
-module github.com/atasoya/nerdfolio
+module nerdfolio
 
 go 1.25.3
