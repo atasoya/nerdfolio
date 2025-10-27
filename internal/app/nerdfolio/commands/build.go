@@ -3,14 +3,43 @@ package commands
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"nerdfolio/internal/app/nerdfolio/colors"
 	"os"
 )
 
+func checkErr(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 var BuildCmd = flag.NewFlagSet("build", flag.ExitOnError)
-var BuildColorScheme = BuildCmd.String("color", "tokyonight", "Color Scheme")
+var BuildColorScheme = BuildCmd.String("colorScheme", "catppuccinMocha", "Color Scheme")
 
 func HandleBuildCommand() {
 	BuildCmd.Parse(os.Args[2:])
-	fmt.Println("subcommand 'build'")
-	fmt.Println("  color-scheme:", *BuildColorScheme)
+	fmt.Println("Starting the build process!")
+	fmt.Println("  colorScheme:", *BuildColorScheme)
+
+	currentPath, _ := os.Getwd()
+	fmt.Println(currentPath)
+
+	err := os.Mkdir("out", 0755)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	copy(currentPath+"/index.html", currentPath+"/out"+"/index.html")
+
+	d1 := []byte(colors.CatppuccinMocha)
+	err = os.WriteFile(currentPath+"/out/nerdfolio.css", d1, 0644)
+}
+
+func copy(src string, dst string) {
+	data, err := ioutil.ReadFile(src)
+	checkErr(err)
+	err = ioutil.WriteFile(dst, data, 0644)
+	checkErr(err)
 }
