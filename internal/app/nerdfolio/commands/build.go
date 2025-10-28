@@ -23,14 +23,17 @@ func HandleBuildCommand() {
 	fmt.Println("  colorScheme:", *BuildColorScheme)
 
 	currentPath, _ := os.Getwd()
-	fmt.Println(currentPath)
+	outputDirectory := currentPath + "/out"
 
-	err := os.Mkdir("out", 0755)
-	if err != nil {
-		fmt.Println(err)
+	if _, err := os.Stat(outputDirectory); os.IsNotExist(err) {
+		err := os.Mkdir("out", 0755)
+		if err != nil {
+			fmt.Println("There was a problem creating /out directry")
+			os.Exit(1)
+		}
 	}
 
-	copy(currentPath+"/index.html", currentPath+"/out"+"/index.html")
+	copy(currentPath+"/index.html", outputDirectory)
 
 	var colorScheme []byte
 	switch *BuildColorScheme {
@@ -38,11 +41,19 @@ func HandleBuildCommand() {
 		colorScheme = []byte(colors.CatppuccinMocha)
 	case "catppuccinLatte":
 		colorScheme = []byte(colors.CatppuccinLatte)
+	case "catppuccinFrappe":
+		colorScheme = []byte(colors.CatppuccinFrappe)
+	case "catppccinMacchiato":
+		colorScheme = []byte(colors.CatppuccinMacchiato)
 	default:
 		colorScheme = []byte("none")
 
 	}
-	err = os.WriteFile(currentPath+"/out/nerdfolio.css", colorScheme, 0644)
+	err := os.WriteFile(currentPath+"/out/nerdfolio.css", colorScheme, 0644)
+	if err != nil {
+		fmt.Println("There was a problem importing nerdfolio.css")
+		os.Exit(1)
+	}
 }
 
 func copy(src string, dst string) {
