@@ -3,16 +3,10 @@ package commands
 import (
 	"flag"
 	"fmt"
-	"log"
 	"nerdfolio/internal/colors"
+	"nerdfolio/internal/helpers"
 	"os"
 )
-
-func checkErr(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 
 var BuildCmd = flag.NewFlagSet("build", flag.ExitOnError)
 var BuildColorScheme = BuildCmd.String("colorScheme", "catppuccinMocha", "Color Scheme")
@@ -33,7 +27,7 @@ func HandleBuildCommand() {
 		}
 	}
 
-	copy(currentPath+"/index.html", outputDirectory+"/index.html")
+	helpers.Copy(currentPath+"/index.html", outputDirectory+"/index.html")
 
 	var colorScheme []byte
 	switch *BuildColorScheme {
@@ -58,11 +52,4 @@ func HandleBuildCommand() {
 		fmt.Println("There was a problem importing nerdfolio.css")
 		os.Exit(1)
 	}
-}
-
-func copy(src string, dst string) {
-	data, err := os.ReadFile(src)
-	checkErr(err)
-	err = os.WriteFile(dst, data, 0644)
-	checkErr(err)
 }
