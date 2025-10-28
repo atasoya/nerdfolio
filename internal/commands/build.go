@@ -3,18 +3,19 @@ package commands
 import (
 	"flag"
 	"fmt"
-	"nerdfolio/internal/colors"
+	"nerdfolio/internal/flags"
 	"nerdfolio/internal/helpers"
 	"os"
+	"time"
 )
 
 var BuildCmd = flag.NewFlagSet("build", flag.ExitOnError)
-var BuildColorScheme = BuildCmd.String("colorScheme", "catppuccinMocha", "Color Scheme")
+var BuildColorSchemeFlag = BuildCmd.String("colorScheme", "catppuccinMocha", "Color Scheme")
 
 func HandleBuildCommand() {
+	start := time.Now()
 	BuildCmd.Parse(os.Args[2:])
 	fmt.Println("Starting the build process!")
-	fmt.Println("  colorScheme:", *BuildColorScheme)
 
 	currentPath, _ := os.Getwd()
 	outputDirectory := currentPath + "/out"
@@ -29,27 +30,10 @@ func HandleBuildCommand() {
 
 	helpers.Copy(currentPath+"/index.html", outputDirectory+"/index.html")
 
-	var colorScheme []byte
-	switch *BuildColorScheme {
-	case "catppuccinMocha":
-		colorScheme = []byte(colors.CatppuccinMocha)
-	case "catppuccinLatte":
-		colorScheme = []byte(colors.CatppuccinLatte)
-	case "catppuccinFrappe":
-		colorScheme = []byte(colors.CatppuccinFrappe)
-	case "catppccinMacchiato":
-		colorScheme = []byte(colors.CatppuccinMacchiato)
-	case "tokyoNightStorm":
-		colorScheme = []byte(colors.TokyoNightStorm)
-	case "gruvboxDark":
-		colorScheme = []byte(colors.GruvboxDark)
-	default:
-		colorScheme = []byte("none")
+	flags.HandleColorSchemeFlag(BuildColorSchemeFlag, currentPath)
 
-	}
-	err := os.WriteFile(currentPath+"/out/nerdfolio.css", colorScheme, 0644)
-	if err != nil {
-		fmt.Println("There was a problem importing nerdfolio.css")
-		os.Exit(1)
-	}
+	t := time.Now()
+	elapsed := t.Sub(start)
+	fmt.Println("Build completed in:", elapsed.Milliseconds(), "ms")
+
 }
