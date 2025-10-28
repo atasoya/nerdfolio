@@ -33,7 +33,7 @@ func HandleBuildCommand() {
 		}
 	}
 
-	copy(currentPath+"/index.html", outputDirectory)
+	copy(currentPath+"/index.html", outputDirectory+"/index.html")
 
 	var colorScheme []byte
 	switch *BuildColorScheme {
@@ -45,6 +45,10 @@ func HandleBuildCommand() {
 		colorScheme = []byte(colors.CatppuccinFrappe)
 	case "catppccinMacchiato":
 		colorScheme = []byte(colors.CatppuccinMacchiato)
+	case "tokyoNightStorm":
+		colorScheme = []byte(colors.TokyoNightStorm)
+	case "gruvboxDark":
+		colorScheme = []byte(colors.GruvboxDark)
 	default:
 		colorScheme = []byte("none")
 
