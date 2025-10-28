@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"nerdfolio/internal/app/nerdfolio/commands"
+	"nerdfolio/internal/commands"
 	"os"
 )
 

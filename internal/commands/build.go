@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"nerdfolio/internal/app/nerdfolio/colors"
+	"nerdfolio/internal/colors"
 	"os"
 )
 
