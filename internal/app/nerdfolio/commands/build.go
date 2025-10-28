@@ -3,7 +3,6 @@ package commands
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"nerdfolio/internal/app/nerdfolio/colors"
 	"os"
@@ -33,13 +32,22 @@ func HandleBuildCommand() {
 
 	copy(currentPath+"/index.html", currentPath+"/out"+"/index.html")
 
-	d1 := []byte(colors.CatppuccinMocha)
-	err = os.WriteFile(currentPath+"/out/nerdfolio.css", d1, 0644)
+	var colorScheme []byte
+	switch *BuildColorScheme {
+	case "catppuccinMocha":
+		colorScheme = []byte(colors.CatppuccinMocha)
+	case "catppuccinLatte":
+		colorScheme = []byte(colors.CatppuccinLatte)
+	default:
+		colorScheme = []byte("none")
+
+	}
+	err = os.WriteFile(currentPath+"/out/nerdfolio.css", colorScheme, 0644)
 }
 
 func copy(src string, dst string) {
-	data, err := ioutil.ReadFile(src)
+	data, err := os.ReadFile(src)
 	checkErr(err)
-	err = ioutil.WriteFile(dst, data, 0644)
+	err = os.WriteFile(dst, data, 0644)
 	checkErr(err)
 }
