@@ -4,8 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"nerdfolio/internal/flags"
-	"nerdfolio/internal/helpers"
 	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -28,7 +30,35 @@ func HandleBuildCommand() {
 		}
 	}
 
-	helpers.Copy(currentPath+"/index.html", outputDirectory+"/index.html")
+	indexHtmlContentData, _ := os.ReadFile(currentPath + "/index.html")
+	indexHtmlContent := string(indexHtmlContentData)
+
+	templateMap := make(map[string]string)
+	files, err := os.ReadDir("templates/")
+	if err != nil {
+		os.Exit(1)
+	}
+
+	for _, file := range files {
+		fileName := file.Name()
+		baseName := strings.TrimSuffix(file.Name(), filepath.Ext(file.Name()))
+
+		data, err := os.ReadFile(currentPath + "/templates/" + fileName)
+		if err != nil {
+			os.Exit(1)
+		}
+		templateMap[baseName] = string(data)
+		re := regexp.MustCompile(`\{%\s*` + baseName + `\s*%\}`)
+		indexHtmlContent = re.ReplaceAllString(indexHtmlContent, templateMap[baseName])
+
+	}
+
+	for key, value := range templateMap {
+		fmt.Println("Key:", key, "Value:", value)
+	}
+
+	// helpers.Copy(currentPath+"/index.html", outputDirectory+"/index.html")
+	err = os.WriteFile(currentPath+"/out/index.html", []byte(indexHtmlContent), 0644)
 
 	flags.HandleColorSchemeFlag(BuildColorSchemeFlag, currentPath)
 
