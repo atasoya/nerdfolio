@@ -22,20 +22,32 @@ func HandleBuildCommand() {
 	currentPath, _ := os.Getwd()
 	outputDirectory := currentPath + "/out"
 
-	if _, err := os.Stat(outputDirectory); os.IsNotExist(err) {
-		err := os.Mkdir("out", 0755)
-		if err != nil {
-			fmt.Println("There was a problem creating /out directry")
-			os.Exit(1)
-		}
-	}
+	createOutDirectoryIfNotExsists(outputDirectory)
 
 	indexHtmlContentData, _ := os.ReadFile(currentPath + "/index.html")
 	indexHtmlContent := string(indexHtmlContentData)
 
+	indexHtmlContent = replaceTemplates(indexHtmlContent, currentPath)
+
+	err := os.WriteFile(currentPath+"/out/index.html", []byte(indexHtmlContent), 0644)
+	if err != nil {
+		fmt.Println("error while writing index.html content")
+		os.Exit(1)
+	}
+
+	flags.HandleColorSchemeFlag(BuildColorSchemeFlag, currentPath)
+
+	t := time.Now()
+	elapsed := t.Sub(start)
+	fmt.Println("Build completed in:", elapsed.Milliseconds(), "ms")
+
+}
+
+func replaceTemplates(indexHtmlContent string, currentPath string) string {
 	templateMap := make(map[string]string)
 	files, err := os.ReadDir("templates/")
 	if err != nil {
+		fmt.Println("Error while reading templates")
 		os.Exit(1)
 	}
 
@@ -45,25 +57,22 @@ func HandleBuildCommand() {
 
 		data, err := os.ReadFile(currentPath + "/templates/" + fileName)
 		if err != nil {
+			fmt.Println("Error while reading html files")
 			os.Exit(1)
 		}
 		templateMap[baseName] = string(data)
 		re := regexp.MustCompile(`\{%\s*` + baseName + `\s*%\}`)
 		indexHtmlContent = re.ReplaceAllString(indexHtmlContent, templateMap[baseName])
-
 	}
+	return indexHtmlContent
+}
 
-	for key, value := range templateMap {
-		fmt.Println("Key:", key, "Value:", value)
+func createOutDirectoryIfNotExsists(outputDirectory string) {
+	if _, err := os.Stat(outputDirectory); os.IsNotExist(err) {
+		err := os.Mkdir("out", 0755)
+		if err != nil {
+			fmt.Println("There was a problem creating /out directry")
+			os.Exit(1)
+		}
 	}
-
-	// helpers.Copy(currentPath+"/index.html", outputDirectory+"/index.html")
-	err = os.WriteFile(currentPath+"/out/index.html", []byte(indexHtmlContent), 0644)
-
-	flags.HandleColorSchemeFlag(BuildColorSchemeFlag, currentPath)
-
-	t := time.Now()
-	elapsed := t.Sub(start)
-	fmt.Println("Build completed in:", elapsed.Milliseconds(), "ms")
-
 }
