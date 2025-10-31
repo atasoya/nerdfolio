@@ -41,7 +41,7 @@ func HandleBuildCommand() {
 		os.Exit(1)
 	}
 
-	htmlFilesMap, err = replaceJsonData(flatJson, htmlFilesMap, currentPath)
+	htmlFilesMap, err = replaceJsonData(flatJson, htmlFilesMap)
 	if err != nil {
 		os.Exit(1)
 	}
@@ -84,7 +84,7 @@ func replaceTemplates(htmlFilesMap map[string]string, currentPath string) (map[s
 	return htmlFilesMap, nil
 }
 
-func replaceJsonData(jsonDataMap map[string]any, htmlFilesMap map[string]string, currentPath string) (map[string]string, error) {
+func replaceJsonData(jsonDataMap map[string]any, htmlFilesMap map[string]string) (map[string]string, error) {
 	for htmlFile, content := range htmlFilesMap {
 		for name, data := range jsonDataMap {
 			re := regexp.MustCompile(`\{\{\s*` + regexp.QuoteMeta(name) + `\s*\}\}`)
