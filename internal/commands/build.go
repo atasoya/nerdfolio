@@ -1,8 +1,10 @@
 package commands
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"nerdfolio/internal/flags"
 	"os"
 	"path/filepath"
@@ -31,6 +33,21 @@ func HandleBuildCommand() {
 	if err != nil {
 		fmt.Println("Error replacing templates:", err)
 		os.Exit(1)
+	}
+
+	// read data.json
+	jsonDataFile, err := os.Open(currentPath + "/data.json")
+	if err != nil {
+		fmt.Println("Error")
+	}
+	defer jsonDataFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(jsonDataFile)
+	var result map[string]interface{}
+	json.Unmarshal([]byte(byteValue), &result)
+
+	for k, v := range result {
+		fmt.Println(k, v)
 	}
 
 	writeHtmlFilesToOutDirectory(htmlFilesMap)
