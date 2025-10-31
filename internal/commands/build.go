@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"nerdfolio/internal/flags"
 	"os"
 	"path/filepath"
@@ -24,40 +24,32 @@ func HandleBuildCommand() {
 	fmt.Println("Starting the build process!")
 
 	currentPath, _ = os.Getwd()
-	outputDirectory := currentPath + "/out"
-
+	outputDirectory := filepath.Join(currentPath, "out")
 	createOutDirectoryIfNotExsists(outputDirectory)
 
 	htmlFilesMap := createHtmlFilesMap()
+
 	htmlFilesMap, err := replaceTemplates(htmlFilesMap, currentPath)
 	if err != nil {
-		fmt.Println("Error replacing templates:", err)
 		os.Exit(1)
 	}
 
-	// read data.json
-	jsonDataFile, err := os.Open(currentPath + "/data.json")
+	rawJson, flatJson := createJsonDataMaps()
+
+	htmlFilesMap, err = replaceLoops(rawJson, htmlFilesMap)
 	if err != nil {
-		fmt.Println("Error")
+		os.Exit(1)
 	}
-	defer jsonDataFile.Close()
 
-	byteValue, _ := ioutil.ReadAll(jsonDataFile)
-	var result map[string]interface{}
-	json.Unmarshal([]byte(byteValue), &result)
-
-	for k, v := range result {
-		fmt.Println(k, v)
+	htmlFilesMap, err = replaceJsonData(flatJson, htmlFilesMap, currentPath)
+	if err != nil {
+		os.Exit(1)
 	}
 
 	writeHtmlFilesToOutDirectory(htmlFilesMap)
-
 	flags.HandleColorSchemeFlag(BuildColorSchemeFlag, currentPath)
 
-	t := time.Now()
-	elapsed := t.Sub(start)
-	fmt.Println("Build completed in:", elapsed.Milliseconds(), "ms")
-
+	fmt.Printf("Build completed in %d ms\n", time.Since(start).Milliseconds())
 }
 
 func replaceTemplates(htmlFilesMap map[string]string, currentPath string) (map[string]string, error) {
@@ -89,6 +81,17 @@ func replaceTemplates(htmlFilesMap map[string]string, currentPath string) (map[s
 		htmlFilesMap[htmlFile] = content
 	}
 
+	return htmlFilesMap, nil
+}
+
+func replaceJsonData(jsonDataMap map[string]any, htmlFilesMap map[string]string, currentPath string) (map[string]string, error) {
+	for htmlFile, content := range htmlFilesMap {
+		for name, data := range jsonDataMap {
+			re := regexp.MustCompile(`\{\{\s*` + regexp.QuoteMeta(name) + `\s*\}\}`)
+			content = re.ReplaceAllString(content, fmt.Sprintf("%v", data))
+		}
+		htmlFilesMap[htmlFile] = content
+	}
 	return htmlFilesMap, nil
 }
 
@@ -141,4 +144,114 @@ func writeHtmlFilesToOutDirectory(htmlFilesMap map[string]string) {
 			os.Exit(1)
 		}
 	}
+}
+
+func createJsonDataMaps() (map[string]any, map[string]any) {
+	jsonPath := filepath.Join(currentPath, "data.json")
+	file, err := os.Open(jsonPath)
+	if err != nil {
+		return map[string]any{}, map[string]any{}
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		return map[string]any{}, map[string]any{}
+	}
+
+	var raw map[string]any
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return map[string]any{}, map[string]any{}
+	}
+
+	flat := make(map[string]any)
+	flatten("", raw, flat)
+
+	return raw, flat
+}
+
+func flatten(prefix string, m map[string]any, result map[string]any) {
+	for k, v := range m {
+		key := k
+		if prefix != "" {
+			key = prefix + "." + k
+		}
+		switch val := v.(type) {
+		case map[string]any:
+			flatten(key, val, result)
+		case []any:
+			values := make([]string, len(val))
+			for i, x := range val {
+				values[i] = fmt.Sprintf("%v", x)
+			}
+			result[key] = strings.Join(values, ", ")
+		default:
+			result[key] = val
+		}
+	}
+}
+
+func replaceLoops(jsonDataMap map[string]any, htmlFilesMap map[string]string) (map[string]string, error) {
+	loopRegex := regexp.MustCompile(`\{\{#each\s+([\w\.]+)\}\}([\s\S]*?)\{\{\/each\}\}`)
+
+	for file, content := range htmlFilesMap {
+		matches := loopRegex.FindAllStringSubmatch(content, -1)
+		for _, match := range matches {
+			keyPath := match[1]
+			innerBlock := match[2]
+
+			value, ok := getNestedValue(jsonDataMap, keyPath)
+			if !ok {
+				continue
+			}
+
+			var replacement strings.Builder
+
+			switch v := value.(type) {
+			case []any:
+				for _, item := range v {
+					block := innerBlock
+					switch val := item.(type) {
+					case map[string]any:
+						for subKey, subVal := range val {
+							re := regexp.MustCompile(`\{\{\s*` + regexp.QuoteMeta(subKey) + `\s*\}\}`)
+							block = re.ReplaceAllString(block, fmt.Sprintf("%v", subVal))
+						}
+					default:
+						re := regexp.MustCompile(`\{\{\s*this\s*\}\}`)
+						block = re.ReplaceAllString(block, fmt.Sprintf("%v", val))
+					}
+					replacement.WriteString(block)
+				}
+			case map[string]any:
+				for subKey, subVal := range v {
+					block := innerBlock
+					block = strings.ReplaceAll(block, "{{ key }}", subKey)
+					block = strings.ReplaceAll(block, "{{ value }}", fmt.Sprintf("%v", subVal))
+					replacement.WriteString(block)
+				}
+			}
+
+			content = strings.ReplaceAll(content, match[0], replacement.String())
+		}
+		htmlFilesMap[file] = content
+	}
+
+	return htmlFilesMap, nil
+}
+
+func getNestedValue(data map[string]any, path string) (any, bool) {
+	parts := strings.Split(path, ".")
+	var current any = data
+	for _, part := range parts {
+		if m, ok := current.(map[string]any); ok {
+			current, ok = m[part]
+			if !ok {
+				return nil, false
+			}
+		} else {
+			return nil, false
+		}
+	}
+	return current, true
 }
