@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/yuin/goldmark"
 	"io"
 	"nerdfolio/internal/flags"
 	"os"
@@ -103,31 +104,58 @@ func replaceJsonData(jsonDataMap map[string]any, htmlFilesMap map[string]string)
 func createHtmlFilesMap() map[string]string {
 	htmlFilesMap := make(map[string]string)
 	entries, _ := os.ReadDir(currentPath)
+
 	for _, entry := range entries {
-		if entry.IsDir() {
+		if !entry.IsDir() {
+			fileName := entry.Name()
+			if !strings.HasSuffix(strings.ToLower(fileName), ".html") {
+				continue
+			}
+
+			filePath := filepath.Join(currentPath, fileName)
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				fmt.Println("Error reading file:", fileName, err)
+				os.Exit(1)
+			}
+
+			htmlFilesMap[filepath.Join("out", fileName)] = string(data)
 			continue
 		}
 
-		fileName := entry.Name()
+		if entry.IsDir() && entry.Name() == "blogs" {
+			blogPath := filepath.Join(currentPath, "blogs")
+			mdEntries, err := os.ReadDir(blogPath)
+			if err != nil {
+				fmt.Println("Error reading blogs directory:", err)
+				os.Exit(1)
+			}
 
-		if !strings.HasSuffix(strings.ToLower(fileName), ".html") {
-			continue
+			for _, mdFile := range mdEntries {
+				if mdFile.IsDir() || !strings.HasSuffix(strings.ToLower(mdFile.Name()), ".md") {
+					continue
+				}
+
+				mdFilePath := filepath.Join(blogPath, mdFile.Name())
+				mdData, err := os.ReadFile(mdFilePath)
+				if err != nil {
+					fmt.Println("Error reading markdown file:", mdFile.Name(), err)
+					os.Exit(1)
+				}
+
+				var htmlOutput strings.Builder
+				if err := goldmark.Convert(mdData, &htmlOutput); err != nil {
+					fmt.Println("Error converting markdown:", mdFile.Name(), err)
+					os.Exit(1)
+				}
+
+				htmlFileName := strings.TrimSuffix(mdFile.Name(), ".md") + ".html"
+				htmlFilesMap[filepath.Join("out", "blogs", htmlFileName)] = htmlOutput.String()
+			}
 		}
-
-		filePath := filepath.Join(currentPath, fileName)
-
-		data, err := os.ReadFile(filePath)
-		if err != nil {
-			fmt.Println("Error reading file:", fileName, err)
-			os.Exit(1)
-		}
-
-		htmlFilesMap[fileName] = string(data)
-
 	}
 
 	return htmlFilesMap
-
 }
 
 func createOutDirectoryIfNotExsists(outputDirectory string) {
@@ -141,11 +169,17 @@ func createOutDirectoryIfNotExsists(outputDirectory string) {
 }
 
 func writeHtmlFilesToOutDirectory(htmlFilesMap map[string]string) {
-	for htmlFile, htmlFileContent := range htmlFilesMap {
+	for relPath, htmlFileContent := range htmlFilesMap {
+		outputPath := filepath.Join(currentPath, relPath)
 
-		err := os.WriteFile(currentPath+"/out/"+htmlFile, []byte(htmlFileContent), 0644)
-		if err != nil {
-			fmt.Println("error while writing index.html content")
+		dir := filepath.Dir(outputPath)
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			fmt.Println("Error creating directory:", dir, err)
+			os.Exit(1)
+		}
+
+		if err := os.WriteFile(outputPath, []byte(htmlFileContent), 0644); err != nil {
+			fmt.Printf("Error writing file %s: %v\n", outputPath, err)
 			os.Exit(1)
 		}
 	}
