@@ -30,6 +30,7 @@ func HandleBuildCommand() {
 
 	err := os.CopyFS(filepath.Join(outputDirectory, "public"), os.DirFS(filepath.Join(currentPath, "public")))
 	if err != nil {
+		fmt.Println("Problem ocurred while copying public directory")
 		os.Exit(1)
 	}
 
@@ -37,6 +38,7 @@ func HandleBuildCommand() {
 
 	htmlFilesMap, err = replaceTemplates(htmlFilesMap, currentPath)
 	if err != nil {
+		fmt.Println("Problem ocurred while replacing templates")
 		os.Exit(1)
 	}
 
@@ -44,11 +46,13 @@ func HandleBuildCommand() {
 
 	htmlFilesMap, err = replaceLoops(rawJson, htmlFilesMap)
 	if err != nil {
+		fmt.Println("Error ocurred while replacing loops")
 		os.Exit(1)
 	}
 
 	htmlFilesMap, err = replaceJsonData(flatJson, htmlFilesMap)
 	if err != nil {
+		fmt.Println("Error occured while replacing json data")
 		os.Exit(1)
 	}
 
