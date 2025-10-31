@@ -27,9 +27,14 @@ func HandleBuildCommand() {
 	outputDirectory := filepath.Join(currentPath, "out")
 	createOutDirectoryIfNotExsists(outputDirectory)
 
+	err := os.CopyFS(filepath.Join(outputDirectory, "public"), os.DirFS(filepath.Join(currentPath, "public")))
+	if err != nil {
+		os.Exit(1)
+	}
+
 	htmlFilesMap := createHtmlFilesMap()
 
-	htmlFilesMap, err := replaceTemplates(htmlFilesMap, currentPath)
+	htmlFilesMap, err = replaceTemplates(htmlFilesMap, currentPath)
 	if err != nil {
 		os.Exit(1)
 	}
