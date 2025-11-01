@@ -13,7 +13,7 @@
 
 
 ## What is Nerdfolio?
-Nerdfolio is my hobby project born by the pain I encounter managing my own personal website ata.soy. Here I tried to keep everything minimal and developer friendly so I have fun managing my personal website.
+Nerdfolio is my hobby project born by the pain I encounter managing my own personal website [ata.soy](https://www.ata.soy/). Here I tried to keep everything minimal and developer friendly so I have fun managing my personal website.
 
 First idea was I was done enough with js ecosystem. It is crazy that I need to have a runtime for building simple portfolios like this. But main problem was blog support. I don't want to be dependent to some random providers even databases for just rendering simple .md files. 
 
@@ -70,7 +70,7 @@ make build
 │       
 └── data.json               # JSON data 
 ```
-You can check the ata.soy repo to see how I use it.
+You can check the [ata.soy](https://www.ata.soy/) repo to see how I use it.
 
 ## How Nerdfolio Build Works
 1. Parse HTML and markdown files.
@@ -119,4 +119,4 @@ Color scheme contributions are very welcomed.
 ## Hosting 
 They are just HTML files so you can host them in any place but I highly recommend using github pages.
 # Websites Using Nerdfolio
-- ata.soy
+- [ata.soy](https://www.ata.soy/)
