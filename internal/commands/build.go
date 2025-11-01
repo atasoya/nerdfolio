@@ -27,42 +27,53 @@ func HandleBuildCommand() {
 	currentPath, _ = os.Getwd()
 	outputDirectory := filepath.Join(currentPath, "out")
 	createOutDirectoryIfNotExsists(outputDirectory)
+	fmt.Println(" » Creating out/ directory")
 
 	err := os.CopyFS(filepath.Join(outputDirectory, "public"), os.DirFS(filepath.Join(currentPath, "public")))
 	if err != nil {
 		fmt.Println("Problem ocurred while copying public directory")
 		os.Exit(1)
 	}
+	fmt.Println(" » Copying public/ directory")
 
 	htmlFilesMap := createHtmlFilesMap()
 
+	fmt.Println(" » Replacing templates in html files:")
 	htmlFilesMap, err = replaceTemplates(htmlFilesMap, currentPath)
 	if err != nil {
 		fmt.Println("Problem ocurred while replacing templates")
 		os.Exit(1)
 	}
 
+	fmt.Println(" » Parsing data.json")
 	rawJson, flatJson := createJsonDataMaps()
 
+	fmt.Println(" » Replacing loops in html files")
 	htmlFilesMap, err = replaceLoops(rawJson, htmlFilesMap)
 	if err != nil {
 		fmt.Println("Error ocurred while replacing loops")
 		os.Exit(1)
 	}
 
+	fmt.Println(" » Replacing json data html files")
 	htmlFilesMap, err = replaceJsonData(flatJson, htmlFilesMap)
 	if err != nil {
 		fmt.Println("Error occured while replacing json data")
 		os.Exit(1)
 	}
 
+	fmt.Println(" » Writhing html files to out/ directory:")
 	writeHtmlFilesToOutDirectory(htmlFilesMap)
+
+	fmt.Println(" » Using " + *BuildColorSchemeFlag + " color scheme:")
 	flags.HandleColorSchemeFlag(BuildColorSchemeFlag, currentPath)
 
 	fmt.Printf("Build completed in %d ms\n", time.Since(start).Milliseconds())
 }
 
 func replaceTemplates(htmlFilesMap map[string]string, currentPath string) (map[string]string, error) {
+	fmt.Println("  » Parsing template files:")
+
 	templateDir := filepath.Join(currentPath, "templates")
 	entries, err := os.ReadDir(templateDir)
 	if err != nil {
@@ -75,6 +86,8 @@ func replaceTemplates(htmlFilesMap map[string]string, currentPath string) (map[s
 			continue
 		}
 		fileName := file.Name()
+		fmt.Println("   ƒ " + fileName)
+
 		baseName := strings.TrimSuffix(fileName, filepath.Ext(fileName))
 		data, err := os.ReadFile(filepath.Join(templateDir, fileName))
 		if err != nil {
@@ -106,6 +119,7 @@ func replaceJsonData(jsonDataMap map[string]any, htmlFilesMap map[string]string)
 }
 
 func createHtmlFilesMap() map[string]string {
+	fmt.Println("  » Parsing html files:")
 	htmlFilesMap := make(map[string]string)
 	entries, _ := os.ReadDir(currentPath)
 
@@ -123,6 +137,7 @@ func createHtmlFilesMap() map[string]string {
 				os.Exit(1)
 			}
 
+			fmt.Println("  ƒ " + fileName)
 			htmlFilesMap[filepath.Join("out", fileName)] = string(data)
 			continue
 		}
@@ -154,6 +169,8 @@ func createHtmlFilesMap() map[string]string {
 				}
 
 				htmlFileName := strings.TrimSuffix(mdFile.Name(), ".md") + ".html"
+				fmt.Println("  ƒ " + htmlFileName)
+
 				htmlFilesMap[filepath.Join("out", "blogs", htmlFileName)] = htmlOutput.String()
 			}
 		}
@@ -163,17 +180,28 @@ func createHtmlFilesMap() map[string]string {
 }
 
 func createOutDirectoryIfNotExsists(outputDirectory string) {
-	if _, err := os.Stat(outputDirectory); os.IsNotExist(err) {
-		err := os.Mkdir("out", 0755)
+	if _, err := os.Stat(outputDirectory); err == nil {
+		err = os.RemoveAll(outputDirectory)
 		if err != nil {
-			fmt.Println("There was a problem creating /out directry")
+			fmt.Println("There was a problem removing the existing /out directory")
 			os.Exit(1)
 		}
+	} else if !os.IsNotExist(err) {
+		fmt.Println("Error checking /out directory:", err)
+		os.Exit(1)
+	}
+
+	err := os.MkdirAll(outputDirectory, 0755)
+	if err != nil {
+		fmt.Println("There was a problem creating /out directory")
+		os.Exit(1)
 	}
 }
 
 func writeHtmlFilesToOutDirectory(htmlFilesMap map[string]string) {
 	for relPath, htmlFileContent := range htmlFilesMap {
+		fmt.Println("  ƒ " + relPath)
+
 		outputPath := filepath.Join(currentPath, relPath)
 
 		dir := filepath.Dir(outputPath)

@@ -9,8 +9,6 @@ import (
 
 func HandleColorSchemeFlag(buildColorScheme *string, currentPath string) {
 
-	fmt.Println("Using color scheme:", *buildColorScheme)
-
 	var colorScheme []byte
 	custom := false
 	switch *buildColorScheme {
@@ -35,12 +33,15 @@ func HandleColorSchemeFlag(buildColorScheme *string, currentPath string) {
 
 	if custom {
 		helpers.Copy(currentPath+"/custom.css", currentPath+"/out/custom.css")
+		fmt.Println("  » Copied custom.css file to out/ directory")
 	} else {
 		err := os.WriteFile(currentPath+"/out/nerdfolio.css", colorScheme, 0644)
 		if err != nil {
 			fmt.Println("There was a problem importing nerdfolio.css")
 			os.Exit(1)
 		}
+		fmt.Println("  » Copied nerdfolio.css file to out/ directory")
+
 	}
 
 }
