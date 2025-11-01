@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"nerdfolio/internal/commands"
 	"os"
 )
@@ -11,7 +10,7 @@ func main() {
 	arguments := os.Args
 	// If 'nerdfolio' called without any arguments
 	if len(arguments) < 2 {
-		fmt.Println("expected 'build' or 'help' subcommands")
+		commands.ShowHelp()
 		os.Exit(1)
 	}
 
