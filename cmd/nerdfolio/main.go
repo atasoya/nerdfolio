@@ -20,6 +20,9 @@ func main() {
 	case "build":
 		commands.HandleBuildCommand()
 
+	case "open":
+		commands.HandleOpenCommand()
+
 	case "help":
 		commands.HandleHelpCommand()
 

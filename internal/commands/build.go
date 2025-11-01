@@ -17,7 +17,7 @@ import (
 var BuildCmd = flag.NewFlagSet("build", flag.ExitOnError)
 var BuildColorSchemeFlag = BuildCmd.String("colorScheme", "catppuccinMocha", "Color Scheme")
 
-var currentPath string
+var currentPath, _ = os.Getwd()
 
 func HandleBuildCommand() {
 	start := time.Now()
