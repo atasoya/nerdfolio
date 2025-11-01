@@ -23,6 +23,9 @@ func main() {
 	case "open":
 		commands.HandleOpenCommand()
 
+	case "create":
+		commands.HandleCreateCommand()
+
 	case "help":
 		commands.HandleHelpCommand()
 
