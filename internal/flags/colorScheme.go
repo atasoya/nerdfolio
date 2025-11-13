@@ -32,15 +32,15 @@ func HandleColorSchemeFlag(buildColorScheme *string, currentPath string) {
 	}
 
 	if custom {
-		helpers.Copy(currentPath+"/custom.css", currentPath+"/out/custom.css")
-		fmt.Println("  » Copied custom.css file to out/ directory")
+		helpers.Copy(currentPath+"/custom.css", currentPath+"/nerdfolio/custom.css")
+		fmt.Println("  » Copied custom.css file to nerdfolio/ directory")
 	} else {
-		err := os.WriteFile(currentPath+"/out/nerdfolio.css", colorScheme, 0644)
+		err := os.WriteFile(currentPath+"/nerdfolio/nerdfolio.css", colorScheme, 0644)
 		if err != nil {
 			fmt.Println("There was a problem importing nerdfolio.css")
 			os.Exit(1)
 		}
-		fmt.Println("  » Copied nerdfolio.css file to out/ directory")
+		fmt.Println("  » Copied nerdfolio.css file to nerdfolio/ directory")
 
 	}
 

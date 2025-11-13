@@ -29,7 +29,7 @@ func ShowHelp() {
 	fmt.Println("		Create initial nerdfolio project scaffolding")
 
 	fmt.Println(Magenta, "	open", Reset)
-	fmt.Println("		Open out/index.html in browser")
+	fmt.Println("		Open nerdfolio/index.html in browser")
 
 	fmt.Println(Magenta, "	help", Reset)
 	fmt.Println("		Print help information")

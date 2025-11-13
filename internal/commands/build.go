@@ -25,9 +25,9 @@ func HandleBuildCommand() {
 	fmt.Println("Starting the build process!")
 
 	currentPath, _ = os.Getwd()
-	outputDirectory := filepath.Join(currentPath, "out")
+	outputDirectory := filepath.Join(currentPath, "nerdfolio")
 	createOutDirectoryIfNotExsists(outputDirectory)
-	fmt.Println(" » Creating out/ directory")
+	fmt.Println(" » Creating nerdfolio/ directory")
 
 	err := os.CopyFS(filepath.Join(outputDirectory, "public"), os.DirFS(filepath.Join(currentPath, "public")))
 	if err != nil {
@@ -62,7 +62,7 @@ func HandleBuildCommand() {
 		os.Exit(1)
 	}
 
-	fmt.Println(" » Writhing html files to out/ directory:")
+	fmt.Println(" » Writhing html files to nerdfolio/ directory:")
 	writeHtmlFilesToOutDirectory(htmlFilesMap)
 
 	fmt.Println(" » Using " + *BuildColorSchemeFlag + " color scheme:")
@@ -138,7 +138,7 @@ func createHtmlFilesMap() map[string]string {
 			}
 
 			fmt.Println("  ƒ " + fileName)
-			htmlFilesMap[filepath.Join("out", fileName)] = string(data)
+			htmlFilesMap[filepath.Join("nerdfolio", fileName)] = string(data)
 			continue
 		}
 
@@ -171,7 +171,7 @@ func createHtmlFilesMap() map[string]string {
 				htmlFileName := strings.TrimSuffix(mdFile.Name(), ".md") + ".html"
 				fmt.Println("  ƒ " + htmlFileName)
 
-				htmlFilesMap[filepath.Join("out", "blogs", htmlFileName)] = htmlOutput.String()
+				htmlFilesMap[filepath.Join("nerdfolio", "blogs", htmlFileName)] = htmlOutput.String()
 			}
 		}
 	}
@@ -183,17 +183,17 @@ func createOutDirectoryIfNotExsists(outputDirectory string) {
 	if _, err := os.Stat(outputDirectory); err == nil {
 		err = os.RemoveAll(outputDirectory)
 		if err != nil {
-			fmt.Println("There was a problem removing the existing /out directory")
+			fmt.Println("There was a problem removing the existing /nerdfolio directory")
 			os.Exit(1)
 		}
 	} else if !os.IsNotExist(err) {
-		fmt.Println("Error checking /out directory:", err)
+		fmt.Println("Error checking /nerdfolio directory:", err)
 		os.Exit(1)
 	}
 
 	err := os.MkdirAll(outputDirectory, 0755)
 	if err != nil {
-		fmt.Println("There was a problem creating /out directory")
+		fmt.Println("There was a problem creating /nerdfolio directory")
 		os.Exit(1)
 	}
 }

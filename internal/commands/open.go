@@ -7,7 +7,7 @@ import (
 )
 
 func HandleOpenCommand() {
-	filePath := "out/index.html"
+	filePath := "nerdfolio/index.html"
 	err := openInBrowser(filePath)
 	if err != nil {
 		fmt.Println("Error:", err)

@@ -36,7 +36,7 @@ nerdfolio build
 # nerdfolio build  --colorScheme gruvboxDark
 ```
 
-Build is created in `out/` directory. You can open index.html in `out/` directory to see the end result or use `nerdfolio open` command to open it faster than ever.
+Build is created in `nerdfolio/` directory. You can open index.html in `nerdfolio/` directory to see the end result or use `nerdfolio open` command to open it faster than ever.
 
 # How to Install?
 
@@ -79,9 +79,9 @@ You can check the [ata.soy](https://www.ata.soy/) repo to see how I use it.
 4. Parse JSON data.
 5. Handle loop templating.
 6. Replace placeholders with actual data from data.json
-7. Write everything to `out/`
-8. Write `nerdfolio.css` file to `out/`
-9. Copy `public/` to `out/public/`
+7. Write everything to `nerdfolio/`
+8. Write `nerdfolio.css` file to `nerdfolio/`
+9. Copy `public/` to `nerdfolio/public/`
 
 
 ## Templates
