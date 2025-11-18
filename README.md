@@ -118,5 +118,14 @@ Color scheme contributions are very welcomed.
 
 ## Hosting 
 They are just HTML files so you can host them in any place but I highly recommend using github pages.
+
+### Hosting on Vercel
+Hosting on Vercel is straightforward:
+- Connect your Github project to Vercel.
+- Select `other` as the framework.
+- Set `nerddolio` as  the root directory.
+- Change build command to `echo "no build"`.
+- Change output directory to `.`.
+
 # Websites Using Nerdfolio
 - [ata.soy](https://www.ata.soy/)
